@@ -5,7 +5,14 @@ import pandas as pd
 st.set_page_config(page_title="Campaign Tracker")
 
 st.title("📊 Campaign Tracker")
+st.subheader("📤 Upload Campaign File (CSV)")
 
+uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+
+if uploaded_file is not None:
+    uploaded_df = pd.read_csv(uploaded_file)
+    st.session_state.campaigns = uploaded_df
+    st.success("✅ Campaign data uploaded successfully!")
 # Initialize the campaign database
 if "campaigns" not in st.session_state:
     st.session_state.campaigns = pd.DataFrame(columns=[
