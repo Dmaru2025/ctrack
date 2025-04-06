@@ -51,19 +51,20 @@ with st.form("add_campaign"):
         st.success("✅ Campaign added!")
 
 # Display the data
-st.subheader("📁 All Campaigns")
 if not st.session_state.campaigns.empty:
     st.subheader("📆 Filter by Send Date")
     selected_date = st.date_input("Choose a date to view campaigns", value=pd.to_datetime("today"))
 
-    # Filter the DataFrame
-    filtered_df = st.session_state.campaigns[
-        pd.to_datetime(st.session_state.campaigns["Send Date"]) == pd.to_datetime(selected_date)
-    ]
+    # Convert and filter
+    df = st.session_state.campaigns.copy()
+    df["Send Date"] = pd.to_datetime(df["Send Date"])
+    filtered_df = df[df["Send Date"] == pd.to_datetime(selected_date)]
 
     st.subheader("📁 Campaigns on Selected Date")
     st.dataframe(filtered_df)
 
+    if filtered_df.empty:
+        st.warning("No campaigns found for that date.")
     if filtered_df.empty:
         st.warning("No campaigns found for that date.")
 st.dataframe(st.session_state.campaigns)
