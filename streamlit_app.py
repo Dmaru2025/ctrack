@@ -47,7 +47,7 @@ with st.form("add_campaign"):
     with col2:
         offer = st.text_input("Main Offer")
         ctr = st.number_input("CTR (%)", step=0.1)
-        open_rate = st.number_input("Open Rate (%)", step=0.1)
+        open_rate_input = st.number_input("Open Rate (%)", step=0.1)  # ✅ FIXED name
 
     notes = st.text_area("Notes", height=100)
     submitted = st.form_submit_button("Add Campaign")
@@ -59,7 +59,7 @@ with st.form("add_campaign"):
             "Send Date": date,
             "Main Offer": offer,
             "CTR (%)": ctr,
-            "Open Rate (%)": open_rate,
+            "Open Rate (%)": open_rate_input,  # ✅ FIXED name here too
             "Notes": notes
         }
         st.session_state.campaigns = st.session_state.campaigns.append(new_campaign, ignore_index=True)
@@ -73,7 +73,7 @@ if not st.session_state.campaigns.empty:
     selected_date = st.date_input("Choose a date", value=pd.to_datetime("2025-06-01")).date()
 
     df = st.session_state.campaigns.copy()
-    df["Send Date"] = pd.to_datetime(df["Send Date"], format="%m/%d/%Y", errors="coerce")
+    df["Send Date"] = pd.to_datetime(df["Send Date"], errors="coerce")
 
     # Debug output
     st.write("🧾 Dates in your data:", df["Send Date"].dt.date.unique())
