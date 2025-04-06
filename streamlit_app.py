@@ -12,10 +12,23 @@ uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
 if uploaded_file is not None:
     uploaded_df = pd.read_csv(uploaded_file)
+
+    # Force 'Send Date' to datetime
+    uploaded_df["Send Date"] = pd.to_datetime(uploaded_df["Send Date"], errors="coerce")
+
+    # Show uploaded content for confirmation
+    st.write("🧪 Here's what we uploaded:")
+    st.dataframe(uploaded_df)
+
+    # Show data types (debug)
+    st.write("🔍 Data types:")
+    st.write(uploaded_df.dtypes)
+
+    # Store to session
     st.session_state.campaigns = uploaded_df
     st.success("✅ Campaign data uploaded successfully!")
 
-# Initialize empty campaign tracker if none uploaded or added yet
+# Initialize empty campaign tracker if nothing uploaded or added yet
 if "campaigns" not in st.session_state:
     st.session_state.campaigns = pd.DataFrame(columns=[
         "Channel", "Campaign Name", "Send Date", "Main Offer", "CTR (%)", "Open Rate (%)", "Notes"
@@ -57,9 +70,11 @@ if not st.session_state.campaigns.empty:
     st.subheader("📆 Filter by Send Date")
     selected_date = st.date_input("Choose a date to view campaigns", value=pd.to_datetime("today"))
 
-    # Convert and filter
+    # Make sure 'Send Date' is datetime again (in case it got missed)
     df = st.session_state.campaigns.copy()
-    df["Send Date"] = pd.to_datetime(df["Send Date"], errors='coerce')  # Force proper datetime parsing
+    df["Send Date"] = pd.to_datetime(df["Send Date"], errors="coerce")
+
+    # Filter
     filtered_df = df[df["Send Date"] == pd.to_datetime(selected_date)]
 
     st.subheader("📁 Campaigns on Selected Date")
@@ -67,7 +82,3 @@ if not st.session_state.campaigns.empty:
 
     if filtered_df.empty:
         st.warning("No campaigns found for that date.")
-        st.warning("No campaigns found for that date.")
-    if filtered_df.empty:
-        st.warning("No campaigns found for that date.")
-st.dataframe(st.session_state.campaigns)
