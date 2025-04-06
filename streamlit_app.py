@@ -59,7 +59,7 @@ if not st.session_state.campaigns.empty:
 
     # Convert and filter
     df = st.session_state.campaigns.copy()
-    df["Send Date"] = pd.to_datetime(df["Send Date"])
+    df["Send Date"] = pd.to_datetime(df["Send Date"], errors='coerce')  # Force proper datetime parsing
     filtered_df = df[df["Send Date"] == pd.to_datetime(selected_date)]
 
     st.subheader("📁 Campaigns on Selected Date")
