@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 
-# Set the page title
 st.set_page_config(page_title="Campaign Tracker")
 
 st.title("📊 Campaign Tracker")
@@ -11,32 +10,28 @@ st.subheader("📤 Upload Campaign File (CSV)")
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
 if uploaded_file is not None:
-    uploaded_df = pd.read_csv(uploaded_file)
+    df = pd.read_csv(uploaded_file)
 
-    # ✅ Parse 'Send Date' using M/D/YYYY format
-    uploaded_df["Send Date"] = pd.to_datetime(uploaded_df["Send Date"], format="%m/%d/%Y", errors="coerce")
+    # Parse M/D/YYYY style dates
+    df["Send Date"] = pd.to_datetime(df["Send Date"], format="%m/%d/%Y", errors="coerce")
 
-    # Show uploaded content for confirmation
-    st.write("🧪 Here's what we uploaded:")
-    st.dataframe(uploaded_df)
-
-    # Show data types (debug)
-    st.write("🔍 Data types:")
-    st.write(uploaded_df.dtypes)
-
-    # Store to session
-    st.session_state.campaigns = uploaded_df
+    st.session_state.campaigns = df
     st.success("✅ Campaign data uploaded successfully!")
 
-# Initialize empty campaign tracker if nothing uploaded or added yet
+    # Debug output
+    st.write("📋 Uploaded Campaigns:")
+    st.dataframe(df)
+    st.write("📅 Dates in data:", df["Send Date"].dt.date.unique())
+
+# Initialize empty if needed
 if "campaigns" not in st.session_state:
     st.session_state.campaigns = pd.DataFrame(columns=[
         "Channel", "Campaign Name", "Send Date", "Main Offer", "CTR (%)", "Open Rate (%)", "Notes"
     ])
 
-# Campaign input form
+# Form to add a campaign
 with st.form("add_campaign"):
-    st.subheader("➕ Add a New Campaign")
+    st.subheader("➕ Add Campaign")
     col1, col2 = st.columns(2)
 
     with col1:
@@ -47,43 +42,40 @@ with st.form("add_campaign"):
     with col2:
         offer = st.text_input("Main Offer")
         ctr = st.number_input("CTR (%)", step=0.1)
-        open_rate_input = st.number_input("Open Rate (%)", step=0.1)  # ✅ FIXED name
+        open_rate_val = st.number_input("Open Rate (%)", step=0.1)  # renamed to avoid conflict
 
-    notes = st.text_area("Notes", height=100)
+    notes = st.text_area("Notes")
     submitted = st.form_submit_button("Add Campaign")
 
     if submitted:
-        new_campaign = {
+        new_row = {
             "Channel": channel,
             "Campaign Name": name,
-            "Send Date": date,
+            "Send Date": pd.to_datetime(date),
             "Main Offer": offer,
             "CTR (%)": ctr,
-            "Open Rate (%)": open_rate_input,  # ✅ FIXED name here too
+            "Open Rate (%)": open_rate_val,
             "Notes": notes
         }
-        st.session_state.campaigns = st.session_state.campaigns.append(new_campaign, ignore_index=True)
+        st.session_state.campaigns = pd.concat([
+            st.session_state.campaigns,
+            pd.DataFrame([new_row])
+        ], ignore_index=True)
         st.success("✅ Campaign added!")
 
-# Filter and display by date
+# Filter by date
 if not st.session_state.campaigns.empty:
-    st.subheader("📆 Filter by Send Date")
+    st.subheader("📆 Filter by Date")
+    filter_date = st.date_input("Select date to view campaigns", value=pd.to_datetime("2025-06-01")).date()
 
-    # Let user pick a date
-    selected_date = st.date_input("Choose a date", value=pd.to_datetime("2025-06-01")).date()
-
+    # Convert and filter
     df = st.session_state.campaigns.copy()
     df["Send Date"] = pd.to_datetime(df["Send Date"], errors="coerce")
 
-    # Debug output
-    st.write("🧾 Dates in your data:", df["Send Date"].dt.date.unique())
-    st.write("📅 Selected date:", selected_date)
-
-    # ✅ Compare both as plain dates
-    filtered_df = df[df["Send Date"].dt.date == selected_date]
+    filtered = df[df["Send Date"].dt.date == filter_date]
 
     st.subheader("📁 Campaigns on Selected Date")
-    st.dataframe(filtered_df)
+    st.dataframe(filtered)
 
-    if filtered_df.empty:
-        st.warning("No campaigns found for that date.")
+    if filtered.empty:
+        st.warning("No campaigns found on that date.")
