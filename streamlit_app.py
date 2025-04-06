@@ -5,15 +5,17 @@ import pandas as pd
 st.set_page_config(page_title="Campaign Tracker")
 
 st.title("📊 Campaign Tracker")
-st.subheader("📤 Upload Campaign File (CSV)")
 
+# Upload CSV
+st.subheader("📤 Upload Campaign File (CSV)")
 uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 
 if uploaded_file is not None:
     uploaded_df = pd.read_csv(uploaded_file)
     st.session_state.campaigns = uploaded_df
     st.success("✅ Campaign data uploaded successfully!")
-# Initialize the campaign database
+
+# Initialize empty campaign tracker if none uploaded or added yet
 if "campaigns" not in st.session_state:
     st.session_state.campaigns = pd.DataFrame(columns=[
         "Channel", "Campaign Name", "Send Date", "Main Offer", "CTR (%)", "Open Rate (%)", "Notes"
@@ -33,7 +35,7 @@ with st.form("add_campaign"):
         offer = st.text_input("Main Offer")
         ctr = st.number_input("CTR (%)", step=0.1)
         open_rate = st.number_input("Open Rate (%)", step=0.1)
-    
+
     notes = st.text_area("Notes", height=100)
     submitted = st.form_submit_button("Add Campaign")
 
@@ -50,7 +52,7 @@ with st.form("add_campaign"):
         st.session_state.campaigns = st.session_state.campaigns.append(new_campaign, ignore_index=True)
         st.success("✅ Campaign added!")
 
-# Display the data
+# Filter and display by date
 if not st.session_state.campaigns.empty:
     st.subheader("📆 Filter by Send Date")
     selected_date = st.date_input("Choose a date to view campaigns", value=pd.to_datetime("today"))
@@ -64,6 +66,7 @@ if not st.session_state.campaigns.empty:
     st.dataframe(filtered_df)
 
     if filtered_df.empty:
+        st.warning("No campaigns found for that date.")
         st.warning("No campaigns found for that date.")
     if filtered_df.empty:
         st.warning("No campaigns found for that date.")
