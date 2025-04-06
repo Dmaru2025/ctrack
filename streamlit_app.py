@@ -68,14 +68,17 @@ with st.form("add_campaign"):
 # Filter and display by date
 if not st.session_state.campaigns.empty:
     st.subheader("📆 Filter by Send Date")
-    selected_date = st.date_input("Choose a date to view campaigns", value=pd.to_datetime("today"))
+    selected_date = st.date_input("Choose a date to view campaigns", value=pd.to_datetime("today")).date()
 
-    # Make sure 'Send Date' is datetime again (in case it got missed)
     df = st.session_state.campaigns.copy()
     df["Send Date"] = pd.to_datetime(df["Send Date"], errors="coerce")
 
-    # Filter
-    filtered_df = df[df["Send Date"] == pd.to_datetime(selected_date)]
+    # 🔍 DEBUG: Show actual dates
+    st.write("🧾 Dates in your data:", df["Send Date"].dt.date.unique())
+    st.write("📅 Selected date:", selected_date)
+
+    # ✅ Match just the date part (ignoring time)
+    filtered_df = df[df["Send Date"].dt.date == selected_date]
 
     st.subheader("📁 Campaigns on Selected Date")
     st.dataframe(filtered_df)
