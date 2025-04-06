@@ -1,4 +1,4 @@
-import streamlit as st
+lecimport streamlit as st
 import pandas as pd
 
 # Set the page title
@@ -68,7 +68,7 @@ with st.form("add_campaign"):
 # Filter and display by date
 if not st.session_state.campaigns.empty:
     st.subheader("📆 Filter by Send Date")
-    selected_date = st.date_input("Choose a date to view campaigns", value=pd.to_datetime("today"))
+   selected_date = pd.to_datetime(st.date_input("Choose a date to view campaigns", value=pd.to_datetime("today"))).normalize()
 
     df = st.session_state.campaigns.copy()
     df["Send Date"] = pd.to_datetime(df["Send Date"], errors="coerce")
