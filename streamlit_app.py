@@ -1,4 +1,4 @@
-lecimport streamlit as st
+import streamlit as st
 import pandas as pd
 
 # Set the page title
@@ -13,8 +13,8 @@ uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
 if uploaded_file is not None:
     uploaded_df = pd.read_csv(uploaded_file)
 
-    # Force 'Send Date' to datetime
-    uploaded_df["Send Date"] = pd.to_datetime(uploaded_df["Send Date"], errors="coerce")
+    # ✅ Parse 'Send Date' using M/D/YYYY format
+    uploaded_df["Send Date"] = pd.to_datetime(uploaded_df["Send Date"], format="%m/%d/%Y", errors="coerce")
 
     # Show uploaded content for confirmation
     st.write("🧪 Here's what we uploaded:")
@@ -66,16 +66,14 @@ with st.form("add_campaign"):
         st.success("✅ Campaign added!")
 
 # Filter and display by date
-# Filter and display by date
 if not st.session_state.campaigns.empty:
     st.subheader("📆 Filter by Send Date")
 
     # Let user pick a date
     selected_date = st.date_input("Choose a date", value=pd.to_datetime("2025-06-01")).date()
 
-    # Convert column to datetime, then to date
     df = st.session_state.campaigns.copy()
-    df["Send Date"] = pd.to_datetime(df["Send Date"], errors="coerce")
+    df["Send Date"] = pd.to_datetime(df["Send Date"], format="%m/%d/%Y", errors="coerce")
 
     # Debug output
     st.write("🧾 Dates in your data:", df["Send Date"].dt.date.unique())
@@ -87,7 +85,5 @@ if not st.session_state.campaigns.empty:
     st.subheader("📁 Campaigns on Selected Date")
     st.dataframe(filtered_df)
 
-    if filtered_df.empty:
-        st.warning("No campaigns found for that date.")
     if filtered_df.empty:
         st.warning("No campaigns found for that date.")
